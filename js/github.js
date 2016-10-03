@@ -1,4 +1,5 @@
-var access_token = ['f1aff3072a385154ffe18aed3b893aa46ce8577c', '2e71ec1017dda2220ccba0f6922ecefd9ea44ac7', 'bfaeb43c92d3e2f534745a6df977f68b64dc7c55', '7731a6f681df209067f597a04822c7abf0425c9a', 'b59d67cf0ba63a89b87ebad75d4ec1e08d9f2e43', 'daf69c16bec62f7c2faf5e5a7f445a4823f2f531'];
+// var access_token = ['f1aff3072a385154ffe18aed3b893aa46ce8577c', '2e71ec1017dda2220ccba0f6922ecefd9ea44ac7', 'bfaeb43c92d3e2f534745a6df977f68b64dc7c55', '7731a6f681df209067f597a04822c7abf0425c9a', 'b59d67cf0ba63a89b87ebad75d4ec1e08d9f2e43', 'daf69c16bec62f7c2faf5e5a7f445a4823f2f531'];
+var access_token = '986e95bb9bfee878e7dde9a07ae5c1e720e590fa';
 
 var width = window.innerWidth;
 var height = window.innerHeight;
@@ -8,6 +9,7 @@ var root;
 var treeData = [];
 var highlighted = [];
 var exclude;
+var r = 720
 
 function checkQuery() {
   var owner = fromQuery('owner');
@@ -46,7 +48,7 @@ function getRepo(branch) {
   $.ajax({
     url: "https://api.github.com/repos/" + owner + "/" + repo + (branch ? "/branches/" + branch : "/commits"),
     data: {
-      access_token: access_token[Math.floor(Math.random() * access_token.length)]
+      access_token: access_token
     },
     success: function (data) {
       $('header').show();
@@ -55,7 +57,7 @@ function getRepo(branch) {
       $('footer').addClass('shift');
       $('#prompt').addClass('fade');
       var sha = branch ? data.commit.sha : data[0].sha,
-        url = "https://api.github.com/repos/" + owner + "/" + repo + "/git/trees/" + sha + "?recursive=1&access_token=" + access_token[Math.floor(Math.random() * access_token.length)];
+        url = "https://api.github.com/repos/" + owner + "/" + repo + "/git/trees/" + sha + "?recursive=1&access_token=" + access_token;
       init(url);
     },
     error: function (request, status, error) {
@@ -97,6 +99,75 @@ function rescale() {
 
 var link = svg.selectAll(".link"),
   node = svg.selectAll(".node");
+
+
+function init2(url) {
+
+  var pack = d3.layout.pack()
+      .size([r, r])
+      .value(function(d) { return d.size; })
+
+  var vis = d3.select("body").insert("svg:svg", "h2")
+      .attr("width", width)
+      .attr("height", height)
+    .append("svg:g")
+      .attr("transform", "translate(" + (width - r) / 2 + "," + (height - r) / 2 + ")");
+
+  d3.json(url, function(data) {
+    node = root = data;
+
+    var nodes = pack.nodes(root);
+
+    // nodes = nodes.map(function(node) {
+    //   node.
+    // });
+
+    vis.selectAll("circle")
+        .data(nodes)
+      .enter().append("svg:circle")
+        .attr("class", function(d) { return d.children ? "parent" : "child"; })
+        .attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; })
+        .attr("r", function(d) { return d.r; })
+        .on("click", function(d) { return zoom(node == d ? root : d); });
+
+    vis.selectAll("text")
+        .data(nodes)
+      .enter().append("svg:text")
+        .attr("class", function(d) { return d.children ? "parent" : "child"; })
+        .attr("x", function(d) { return d.x; })
+        .attr("y", function(d) { return d.y; })
+        .attr("dy", ".35em")
+        .attr("text-anchor", "middle")
+        .style("opacity", function(d) { return d.r > 20 ? 1 : 0; })
+        .text(function(d) { return d.name; });
+
+    d3.select(window).on("click", function() { zoom(root); });
+  });
+
+  function zoom(d, i) {
+    var k = r / d.r / 2;
+    x.domain([d.x - d.r, d.x + d.r]);
+    y.domain([d.y - d.r, d.y + d.r]);
+
+    var t = vis.transition()
+        .duration(d3.event.altKey ? 7500 : 750);
+
+    t.selectAll("circle")
+        .attr("cx", function(d) { return x(d.x); })
+        .attr("cy", function(d) { return y(d.y); })
+        .attr("r", function(d) { return k * d.r; });
+
+    t.selectAll("text")
+        .attr("x", function(d) { return x(d.x); })
+        .attr("y", function(d) { return y(d.y); })
+        .style("opacity", function(d) { return k * d.r > 20 ? 1 : 0; });
+
+    node = d;
+    d3.event.stopPropagation();
+  }
+    
+}
 
 function init(url) {
   treeData = [];

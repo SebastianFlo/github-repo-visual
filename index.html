@@ -5,24 +5,20 @@
 <head itemscope itemtype="http://schema.org/WebSite">
   <title itemprop='name'>GitHub Visualizer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="canonical" href="http://veniversum.me/git-visualizer/" itemprop="url">
   <link rel="shortcut icon" type="image/png" href="images/favicon.png" />
   <script src="http://d3js.org/d3.v3.min.js"></script>
   <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
   <script src="js/jquery.tipsy.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tipsy/1.0.2/jquery.tipsy.css" rel="stylesheet" type="text/css" />
-  <link href="css/main.css" rel="stylesheet" type="text/css" />
+  <!--<link href="css/main.css" rel="stylesheet" type="text/css" />-->
+  <link href="css/main2.css" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
   <div id="graph"></div>
   <section id="header">
     <header>
-      <img id="logo" src="images/logo.png" />
-      <p>Enter a GitHub user/organization name and repository and hit Go! (<a href="?owner=atom&repo=atom">Try atom/atom</a>) <br />
-        Scroll to zoom, click and drag to pan. <br />
-        <i style="color:#f00">Warning:</i> Large repos can get laggy
-      </p>
+      <p>Enter a GitHub user/organization name and repository and hit Go!</p>
     </header>
   </section>
   <div id="prompt">
@@ -32,18 +28,8 @@
       <input class="flat-button" type="submit" value="Go!" />
     </form>
   </div>
-  <a class="github-fork-ribbon left-bottom fixed" href="https://github.com/veniversum/git-visualizer" title="Fork me on GitHub">Fork me on GitHub</a>
-  <footer><a href="http://veniversum.me">Created by Aw Young Qingzhuo</a></footer>
-  <script src="js/github.js" onload="checkQuery();"></script>
-  <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-    ga('create', 'UA-55042305-4', 'auto');
-    ga('send', 'pageview');
-  </script>
+  <!--<script src="js/github.js" onload="checkQuery();"></script>-->
+  <script src="js/test.js"></script>
 </body>
 
 </html>
