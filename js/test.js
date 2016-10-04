@@ -3,28 +3,30 @@ var diameter = 960,
 
 var treeData = [];
 var exclude;
-
+var access_token = '986e95bb9bfee878e7dde9a07ae5c1e720e590fa';
+var owner = 'FalconSocial';
+var repo = 'audience-frontend';
+var branch;
+var commits = [];
+var page = 1;
 
 function getRepo() {
-    var access_token = '986e95bb9bfee878e7dde9a07ae5c1e720e590fa';
-    var owner = 'FalconSocial';
-    var repo = 'audience-frontend';
-    var branch;
-
-
     $.ajax({
-        url: 'https://api.github.com/repos/' + owner + '/' + repo + (branch ? '/branches/' + branch : '/commits'),
+        url: 'https://api.github.com/repos/' + owner + '/' + repo + (branch ? '/branches/' + branch : '/commits?page=' + page + '&per_page=100'),
         data: {
             access_token: access_token
         },
+        async: false,
         success: function (data) {
+            commits = commits.concat(data);
             var sha = branch ? data.commit.sha : data[0].sha,
                 url = 'https://api.github.com/repos/' + owner + '/' + repo + '/git/trees/' + sha + '?recursive=1&access_token=' + access_token;
-            init(url);
-        },
-        error: function (request, status, error) {
-            $('img#logo').attr('src', 'images/logo.png');
-            alert('Error loading repo: ' + request.statusText);
+            if (data.length === 0) {
+                init(url);
+            } else {
+                page++;
+                getRepo();
+            }
         }
     });
 }
@@ -48,6 +50,18 @@ function init(url) {
                 o.name = o.path;
             }
         });
+
+        // json.tree.forEach(function (o) {
+        //     $.ajax({
+        //         url: 'https://api.github.com/repos/' + owner + '/' + repo + '/commits?path=' + o.name,
+        //         data: {
+        //             access_token: access_token
+        //         },
+        //         success: function (data) {
+        //             o.commits = data.length;
+        //         }
+        //     });
+        // });
 
         json.tree.unshift({
             'path': 'root',
@@ -77,7 +91,6 @@ function init(url) {
                 // parent is null or missing
                 treeData.push(node);
             }
-            console.dir(node);
         });
 
         root = treeData[0];
@@ -90,8 +103,13 @@ function init(url) {
 }
 
 function formatName(filename) {
-    if (filename.indexOf('Audience') > -1) {
+    // if (filename.indexOf('Audience') > -1) {
+    if (/^Audience/.test(filename)) {
         return filename.slice('Audience'.length);
+    }
+
+    if (/^audience-/.test(filename)) {
+        return filename.slice('audience-'.length);
     }
     return filename;
 }
