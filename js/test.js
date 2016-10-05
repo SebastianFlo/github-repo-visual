@@ -12,18 +12,38 @@ var page = 1;
 
 function getRepo() {
     $.ajax({
+        url: 'https://api.github.com/repos/' + owner + '/' + repo + (branch ? '/branches/' + branch : '/commits'),
+        data: {
+            access_token: access_token
+        },
+        async: false,
+        success: function (data) {
+            var sha, url;
+            $.getJSON( "data/falcon.json", function( data ) {
+                commits = data;
+            });
+            sha = branch ? data.commit.sha : data[0].sha;
+            url = 'https://api.github.com/repos/' + owner + '/' + repo + '/git/trees/' + sha + '?recursive=1&access_token=' + access_token;
+            init(url);
+        }
+    });
+}
+
+function getRepoAndCommits() {
+    $.ajax({
         url: 'https://api.github.com/repos/' + owner + '/' + repo + (branch ? '/branches/' + branch : '/commits?page=' + page + '&per_page=100'),
         data: {
             access_token: access_token
         },
         async: false,
         success: function (data) {
+            var sha, url;
             commits = commits.concat(data);
-            var sha = branch ? data.commit.sha : data[0].sha,
-                url = 'https://api.github.com/repos/' + owner + '/' + repo + '/git/trees/' + sha + '?recursive=1&access_token=' + access_token;
             if (data.length === 0) {
                 init(url);
             } else {
+                sha = branch ? data.commit.sha : data[0].sha;
+                url = 'https://api.github.com/repos/' + owner + '/' + repo + '/git/trees/' + sha + '?recursive=1&access_token=' + access_token;
                 page++;
                 getRepo();
             }
