@@ -3,14 +3,19 @@ var diameter = 960,
 
 var treeData = [];
 var exclude;
-var access_token = '986e95bb9bfee878e7dde9a07ae5c1e720e590fa';
 var owner = 'FalconSocial';
 var repo = 'audience-frontend';
 var branch;
 var commits = [];
 var page = 1;
 
-function getRepo() {
+var access_token;
+
+$.getJSON("data/token/token.json", function (data) {
+    getRepo(data.token);
+});
+
+function getRepo(access_token) {
     $.ajax({
         url: 'https://api.github.com/repos/' + owner + '/' + repo + (branch ? '/branches/' + branch : '/commits'),
         data: {
@@ -19,7 +24,7 @@ function getRepo() {
         async: false,
         success: function (data) {
             var sha, url;
-            $.getJSON( "data/falcon.json", function( data ) {
+            $.getJSON("data/falcon.json", function (data) {
                 commits = data;
             });
             sha = branch ? data.commit.sha : data[0].sha;
@@ -162,5 +167,3 @@ function update() {
         .style('text-anchor', 'middle')
         .text(function (d) { return formatName(d.filename).substring(0, d.r / 3); });
 }
-
-getRepo();
