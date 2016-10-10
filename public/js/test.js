@@ -1,5 +1,7 @@
 var diameter = 960,
-    format = d3.format(',d');
+    format = d3.format(',d')
+    x = d3.scale.linear().range([0, diameter]),
+    y = d3.scale.linear().range([0, diameter]);
 
 var treeData = [];
 var exclude;
@@ -11,7 +13,7 @@ var maxCommits = 0;
 
 var access_token;
 
-$.getJSON("data/secret/token.json", function (data) {
+$.getJSON('data/secret/token.json', function (data) {
     getRepo(data.token);
 });
 
@@ -37,11 +39,6 @@ function init(url) {
             return console.warn(error);
         }
 
-        // add each file commits here
-        getEffort().done(function(data) {
-            commits = data;
-            maxCommits = data.maxCommits;
-        });
 
         json.tree.forEach(function (o) {
             var indexSlash = o.path.lastIndexOf('/');
@@ -54,6 +51,12 @@ function init(url) {
                 o.filename = o.path.substr(indexSlash + 1);
                 o.name = o.path;
             }
+        });
+
+        // add each file commits here
+        getEffort().done(function(data) {
+            commits = data;
+            maxCommits = data.maxCommits;
         });
 
         json.tree.forEach(function (o) {
@@ -98,6 +101,7 @@ function init(url) {
 
     });
 
+    d3.select(window).on('click', function() { zoom(treeData); });
     d3.select(self.frameElement).style('height', diameter + 'px');
 }
 
@@ -113,17 +117,17 @@ function formatName(filename) {
     return filename;
 }
 
+var pack = d3.layout.pack()
+    .size([diameter - 4, diameter - 4])
+    .value(function (d) { return d.size; });
+
+var svg = d3.select('body').append('svg')
+    .attr('width', diameter)
+    .attr('height', diameter)
+    .append('g')
+    .attr('transform', 'translate(2,2)');
+
 function update() {
-    var pack = d3.layout.pack()
-        .size([diameter - 4, diameter - 4])
-        .value(function (d) { return d.size; });
-
-    var svg = d3.select('body').append('svg')
-        .attr('width', diameter)
-        .attr('height', diameter)
-        .append('g')
-        .attr('transform', 'translate(2,2)');
-
     var node = svg.datum(root).selectAll('.node')
         .data(pack.nodes)
         .enter().append('g')
@@ -140,7 +144,9 @@ function update() {
         });
 
     node.append('circle')
-        .attr('r', function (d) { return d.r; });
+        .attr('r', function (d) { return d.r; })
+        .on('click', function(d) { return zoom(node == d ? root : d); });
+
 
     node.filter(function (d) { return !d.children; }).append('text')
         .attr('dy', '.3em')
@@ -150,14 +156,14 @@ function update() {
     node.filter(function (d) { return !d.children; })
         .style('opacity', function (d) { 
             if (!d.commits) {
-                return 0.7;
+                return 0.5;
             }
 
-            if (d.commits > 30) {
-                d.commits = 30
+            if (d.commits > 50) {
+                d.commits = 50
             } 
 
-            return (70 + 30 * (1 * d.commits) / 30) / 100; 
+            return (50 + 50 * (1 * d.commits) / 50) / 100; 
         });
 }
 
@@ -171,5 +177,26 @@ function getEffort() {
         }
     });
 }
-// map effort to files
 
+
+function zoom(d, i) {
+  var k = diameter / d.r / 2;
+  x.domain([d.x - d.r, d.x + d.r]);
+  y.domain([d.y - d.r, d.y + d.r]);
+
+  var t = svg.transition()
+      .duration(d3.event.altKey ? 7500 : 750);
+
+  t.selectAll('circle')
+      .attr('cx', function(d) { return x(d.x); })
+      .attr('cy', function(d) { return y(d.y); })
+      .attr('r', function(d) { return k * d.r; });
+
+  t.selectAll('text')
+      .attr('x', function(d) { return x(d.x); })
+      .attr('y', function(d) { return y(d.y); })
+      .style('opacity', function(d) { return k * d.r > 20 ? 1 : 0; });
+
+  node = d;
+  d3.event.stopPropagation();
+}
