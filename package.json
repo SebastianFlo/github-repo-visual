@@ -1,0 +1,31 @@
+{
+  "name": "git-visualizer",
+  "version": "1.0.0",
+  "description": "Visualize git files and commits",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SebastianFlo/github-repo-visual.git"
+  },
+  "keywords": [
+    "git",
+    "commits",
+    "visualize",
+    "d3"
+  ],
+  "author": "SebastianFlo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SebastianFlo/github-repo-visual/issues"
+  },
+  "homepage": "https://github.com/SebastianFlo/github-repo-visual#readme",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "ejs": "^2.5.2",
+    "express": "^4.14.0"
+  }
+}

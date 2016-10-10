@@ -7,11 +7,11 @@ var owner = 'FalconSocial';
 var repo = 'audience-frontend';
 var branch;
 var commits = [];
-var page = 1;
+var maxCommits = 0;
 
 var access_token;
 
-$.getJSON("data/token/token.json", function (data) {
+$.getJSON("data/secret/token.json", function (data) {
     getRepo(data.token);
 });
 
@@ -21,37 +21,11 @@ function getRepo(access_token) {
         data: {
             access_token: access_token
         },
-        async: false,
         success: function (data) {
             var sha, url;
-            $.getJSON("data/falcon.json", function (data) {
-                commits = data;
-            });
             sha = branch ? data.commit.sha : data[0].sha;
             url = 'https://api.github.com/repos/' + owner + '/' + repo + '/git/trees/' + sha + '?recursive=1&access_token=' + access_token;
             init(url);
-        }
-    });
-}
-
-function getRepoAndCommits() {
-    $.ajax({
-        url: 'https://api.github.com/repos/' + owner + '/' + repo + (branch ? '/branches/' + branch : '/commits?page=' + page + '&per_page=100'),
-        data: {
-            access_token: access_token
-        },
-        async: false,
-        success: function (data) {
-            var sha, url;
-            commits = commits.concat(data);
-            if (data.length === 0) {
-                init(url);
-            } else {
-                sha = branch ? data.commit.sha : data[0].sha;
-                url = 'https://api.github.com/repos/' + owner + '/' + repo + '/git/trees/' + sha + '?recursive=1&access_token=' + access_token;
-                page++;
-                getRepo();
-            }
         }
     });
 }
@@ -62,6 +36,12 @@ function init(url) {
         if (error) {
             return console.warn(error);
         }
+
+        // add each file commits here
+        getEffort().done(function(data) {
+            commits = data;
+            maxCommits = data.maxCommits;
+        });
 
         json.tree.forEach(function (o) {
             var indexSlash = o.path.lastIndexOf('/');
@@ -76,17 +56,11 @@ function init(url) {
             }
         });
 
-        // json.tree.forEach(function (o) {
-        //     $.ajax({
-        //         url: 'https://api.github.com/repos/' + owner + '/' + repo + '/commits?path=' + o.name,
-        //         data: {
-        //             access_token: access_token
-        //         },
-        //         success: function (data) {
-        //             o.commits = data.length;
-        //         }
-        //     });
-        // });
+        json.tree.forEach(function (o) {
+            if (commits[o.filename]) {
+                o.commits = commits[o.filename];
+            }
+        });
 
         json.tree.unshift({
             'path': 'root',
@@ -157,7 +131,13 @@ function update() {
         .attr('transform', function (d) { return 'translate(' + d.x + ',' + d.y + ')'; });
 
     node.append('title')
-        .text(function (d) { return formatName(d.filename) + (d.children ? '' : ': ' + format(d.size)); });
+        .text(function (d) {
+            var toolTip = formatName(d.filename);
+            if (d.commits) {
+                toolTip = toolTip + ' [' + d.commits + ']';
+            }
+             return toolTip; 
+        });
 
     node.append('circle')
         .attr('r', function (d) { return d.r; });
@@ -166,4 +146,30 @@ function update() {
         .attr('dy', '.3em')
         .style('text-anchor', 'middle')
         .text(function (d) { return formatName(d.filename).substring(0, d.r / 3); });
+    
+    node.filter(function (d) { return !d.children; })
+        .style('opacity', function (d) { 
+            if (!d.commits) {
+                return 0.7;
+            }
+
+            if (d.commits > 30) {
+                d.commits = 30
+            } 
+
+            return (70 + 30 * (1 * d.commits) / 30) / 100; 
+        });
 }
+
+// get effort 
+function getEffort() {
+    return $.ajax({
+        url: '/effort',
+        async: false,
+        success: function (data) {
+            return data;
+        }
+    });
+}
+// map effort to files
+
