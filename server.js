@@ -43,6 +43,8 @@ app.get('/effort', function (req, res) {
             return (/\w+(|\.+) \d+/).test(line);
         }).filter(function (line) {
             return line.length > 0 || line !== '' || line !== '  ';
+        }).map(function(line){
+            return line.replace(/\,\ +/, '');
         }).map(function (line) {
 
             var lineElements = line
@@ -50,7 +52,7 @@ app.get('/effort', function (req, res) {
                 .filter(function (x) { return x.length > 0 });
 
             var filename = formatFileName(lineElements[0]);
-            returnObj[filename] = lineElements[1];
+            returnObj[filename] = parseInt(lineElements[1]);
             maxCommits = maxCommits < parseInt(lineElements[1]) ? parseInt(lineElements[1]) : maxCommits;
         })
 

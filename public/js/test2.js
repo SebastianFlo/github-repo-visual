@@ -150,7 +150,6 @@ function update(root) {
     vis.selectAll('circle')
         .data(nodes)
         .enter().append('svg:circle')
-        .attr('class', function (d) { return d.children ? 'parent' : 'child'; })
         .attr('cx', function (d) { 
             return d.x; 
         })
@@ -159,6 +158,17 @@ function update(root) {
         })
         .attr('r', function (d) { 
             return d.r; 
+        })
+        .style('opacity', function (d) { 
+            if (!d.commits) {
+                return 0.5;
+            }
+
+            if (d.commits > 50) {
+                d.commits = 50
+            } 
+
+            return (50 + d.commits) / 100; 
         })
         .on('click', function (d) { return zoom(root == d ? root : d); });
 
@@ -171,8 +181,16 @@ function update(root) {
         .attr('dy', '.35em')
         .attr('text-anchor', 'middle')
         .style('opacity', function (d) { return d.r > 20 ? 1 : 0; })
-        .text(function (d) { 
-            return d.filename; 
+        .text(function (d) {
+            if (!d.filename) {
+                return;
+            }
+            var name = d.filename;
+
+            if (d.commits) {
+                name = name + '[' + d.commits +']';
+            }
+            return name; 
         });
 }
 
