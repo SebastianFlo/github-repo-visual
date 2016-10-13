@@ -13,7 +13,7 @@ var w = window.innerWidth || e.clientWidth || g.clientWidth,
 var treeData = [];
 var exclude;
 var owner = 'FalconSocial';
-var repo = 'audience-frontend';
+var repo = fromQuery('repo') || 'audience-frontend';
 var branch;
 var commits = [];
 var maxCommits = 0;
@@ -21,8 +21,15 @@ var maxCommits = 0;
 var access_token;
 
 $.getJSON('data/secret/token.json', function (data) {
+    // checkCache(repo);
     getRepo(data.token);
 });
+
+function checkCache(repo) {
+    // $.getJSON('data/secret/token.json', function (data) {
+    //     getRepo(data.token);
+    // });
+}
 
 function getRepo(access_token) {
     $.ajax({
@@ -38,6 +45,18 @@ function getRepo(access_token) {
         }
     });
 }
+
+function fromQuery(value) {
+    var qs = window.location.search;
+    var re = new RegExp(value + '=([^&]*)');
+    var match = re.exec(qs);
+    if (match) {
+        return match[1];
+    } else {
+        return null;
+    }
+}
+
 
 var pack = d3.layout.pack()
     .size([r, r])
@@ -96,8 +115,8 @@ function setFileData(json) {
 function setFileCommits(json) {
     // add each file commits here
     getEffort().done(function (data) {
-        commits = data;
-        maxCommits = data.maxCommits;
+        commits = JSON.parse(data);
+        maxCommits = commits.maxCommits;
 
         json.tree.forEach(function (o) {
             if (commits[o.path]) {
@@ -215,6 +234,9 @@ function update(root) {
 function getEffort() {
     return $.ajax({
         url: '/effort',
+        data: {
+            repo: repo
+        },
         async: false,
         success: function (data) {
             return data;

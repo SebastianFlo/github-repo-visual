@@ -38,3 +38,6 @@ jspm_packages
 
 # Current
 public/data/secret
+audience-frontend.json
+Eyas.json
+HTML-Client.json

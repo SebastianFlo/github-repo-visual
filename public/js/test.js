@@ -1,6 +1,6 @@
 var diameter = 960,
     format = d3.format(',d')
-    x = d3.scale.linear().range([0, diameter]),
+x = d3.scale.linear().range([0, diameter]),
     y = d3.scale.linear().range([0, diameter]);
 
 var treeData = [];
@@ -54,7 +54,7 @@ function init(url) {
         });
 
         // add each file commits here
-        getEffort().done(function(data) {
+        getEffort().done(function (data) {
             commits = data;
             maxCommits = data.maxCommits;
         });
@@ -101,7 +101,7 @@ function init(url) {
 
     });
 
-    d3.select(window).on('click', function() { zoom(treeData); });
+    d3.select(window).on('click', function () { zoom(treeData); });
     d3.select(self.frameElement).style('height', diameter + 'px');
 }
 
@@ -140,30 +140,30 @@ function update() {
             if (d.commits) {
                 toolTip = toolTip + ' [' + d.commits + ']';
             }
-             return toolTip; 
+            return toolTip;
         });
 
     node.append('circle')
         .attr('r', function (d) { return d.r; })
-        .on('click', function(d) { return zoom(node == d ? root : d); });
+        .on('click', function (d) { return zoom(node == d ? root : d); });
 
 
     node.filter(function (d) { return !d.children; }).append('text')
         .attr('dy', '.3em')
         .style('text-anchor', 'middle')
         .text(function (d) { return formatName(d.filename).substring(0, d.r / 3); });
-    
+
     node.filter(function (d) { return !d.children; })
-        .style('opacity', function (d) { 
+        .style('opacity', function (d) {
             if (!d.commits) {
                 return 0.5;
             }
 
             if (d.commits > 50) {
                 d.commits = 50
-            } 
+            }
 
-            return (50 + 50 * (1 * d.commits) / 50) / 100; 
+            return (50 + 50 * (1 * d.commits) / 50) / 100;
         });
 }
 
@@ -180,23 +180,23 @@ function getEffort() {
 
 
 function zoom(d, i) {
-  var k = diameter / d.r / 2;
-  x.domain([d.x - d.r, d.x + d.r]);
-  y.domain([d.y - d.r, d.y + d.r]);
+    var k = diameter / d.r / 2;
+    x.domain([d.x - d.r, d.x + d.r]);
+    y.domain([d.y - d.r, d.y + d.r]);
 
-  var t = svg.transition()
-      .duration(d3.event.altKey ? 7500 : 750);
+    var t = svg.transition()
+        .duration(d3.event.altKey ? 7500 : 750);
 
-  t.selectAll('circle')
-      .attr('cx', function(d) { return x(d.x); })
-      .attr('cy', function(d) { return y(d.y); })
-      .attr('r', function(d) { return k * d.r; });
+    t.selectAll('circle')
+        .attr('cx', function (d) { return x(d.x); })
+        .attr('cy', function (d) { return y(d.y); })
+        .attr('r', function (d) { return k * d.r; });
 
-  t.selectAll('text')
-      .attr('x', function(d) { return x(d.x); })
-      .attr('y', function(d) { return y(d.y); })
-      .style('opacity', function(d) { return k * d.r > 20 ? 1 : 0; });
+    t.selectAll('text')
+        .attr('x', function (d) { return x(d.x); })
+        .attr('y', function (d) { return y(d.y); })
+        .style('opacity', function (d) { return k * d.r > 20 ? 1 : 0; });
 
-  node = d;
-  d3.event.stopPropagation();
+    node = d;
+    d3.event.stopPropagation();
 }
