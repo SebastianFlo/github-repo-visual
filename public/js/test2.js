@@ -1,5 +1,9 @@
-var w = 1280,
-    h = 800,
+var d = document,
+    e = d.documentElement,
+    g = d.getElementsByTagName('body')[0];
+
+var w = window.innerWidth || e.clientWidth || g.clientWidth,
+    h = window.innerHeight || e.clientHeight || g.clientHeight,
     r = 720,
     x = d3.scale.linear().range([0, r]),
     y = d3.scale.linear().range([0, r]),
@@ -91,13 +95,13 @@ function setFileData(json) {
 
 function setFileCommits(json) {
     // add each file commits here
-    getEffort().done(function(data) {
+    getEffort().done(function (data) {
         commits = data;
         maxCommits = data.maxCommits;
 
         json.tree.forEach(function (o) {
-            if (commits[o.filename]) {
-                o.commits = commits[o.filename];
+            if (commits[o.path]) {
+                o.commits = commits[o.path];
             }
         });
     });
@@ -150,27 +154,33 @@ function update(root) {
     vis.selectAll('circle')
         .data(nodes)
         .enter().append('svg:circle')
-        .attr('cx', function (d) { 
-            return d.x; 
+        .attr('cx', function (d) {
+            return d.x;
         })
-        .attr('cy', function (d) { 
-            return d.y; 
+        .attr('cy', function (d) {
+            return d.y;
         })
-        .attr('r', function (d) { 
-            return d.r; 
+        .attr('r', function (d) {
+            return d.r;
         })
-        .style('opacity', function (d) { 
-            if (!d.commits) {
-                return 0.5;
+        .style('fill', function (d) {
+            var commitColor = 100;
+            if (d.commits) {
+                commitColor = commitColor + d.commits;
             }
-
-            if (d.commits > 50) {
-                d.commits = 50
-            } 
-
-            return (50 + d.commits) / 100; 
+            return 'rgb(' + commitColor + ', 100, 255)';
+        })
+        .style('opacity', function (d) {
+            if (!d.commits) {
+                return 0.3;
+            }
         })
         .on('click', function (d) { return zoom(root == d ? root : d); });
+
+    vis.selectAll('circle')
+        .append('svg:title').text(function (d) {
+        return d.path;
+    });
 
     vis.selectAll('text')
         .data(nodes)
@@ -181,17 +191,24 @@ function update(root) {
         .attr('dy', '.35em')
         .attr('text-anchor', 'middle')
         .style('opacity', function (d) { return d.r > 20 ? 1 : 0; })
+        // .text(function (d) {
+        //     if (!d.filename) {
+        //         return;
+        //     }
+        //     var name = d.filename;
+
+        //     if (d.commits) {
+        //         name = name + '[' + d.commits + ']';
+        //     }
+        //     return name;
+        // });
         .text(function (d) {
-            if (!d.filename) {
+            if (!d.commits) {
                 return;
             }
-            var name = d.filename;
+            return d.commits;
+        })
 
-            if (d.commits) {
-                name = name + '[' + d.commits +']';
-            }
-            return name; 
-        });
 }
 
 // get effort 

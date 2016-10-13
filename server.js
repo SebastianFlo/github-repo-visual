@@ -36,6 +36,7 @@ app.get('/effort', function (req, res) {
         var effordDataByLine = effortData.split(/\r?\n/);
         var returnObj = {};
         var maxCommits = 0;
+        var count = 0;
 
         // return JSON.stringify(effordDataByLine, null, '    ');
         var mappedEffortData = effordDataByLine.filter(function (line) {
@@ -54,9 +55,11 @@ app.get('/effort', function (req, res) {
             var filename = formatFileName(lineElements[0]);
             returnObj[filename] = parseInt(lineElements[1]);
             maxCommits = maxCommits < parseInt(lineElements[1]) ? parseInt(lineElements[1]) : maxCommits;
+            count++;
         })
 
         returnObj.maxCommits = maxCommits;
+        returnObj.count = count;
         res.json(returnObj);
     }
 });
