@@ -11,9 +11,13 @@ var w = window.innerWidth || e.clientWidth || g.clientWidth,
     root;
 
 var treeData = [];
-var exclude;
+var excludeList = {
+    'HTML-Client': 'src/static/',
+    'Eyas': 'development/static/'
+}
 var owner = 'FalconSocial';
 var repo = fromQuery('repo') || 'audience-frontend';
+var exclude = excludeList[repo];
 var branch;
 var commits = [];
 var maxCommits = 0;
@@ -91,9 +95,8 @@ function init(url) {
         */
 
         update(data);
-
-        exclude = null;
         d3.select(window).on('click', function () { zoom(root); });
+        exclude = null;
     });
 }
 
@@ -116,7 +119,7 @@ function setFileCommits(json) {
     // add each file commits here
     getEffort().done(function (data) {
         commits = JSON.parse(data);
-        maxCommits = commits.maxCommits;
+        maxCommits = commits.maxCommits
 
         json.tree.forEach(function (o) {
             if (commits[o.path]) {
@@ -138,9 +141,23 @@ function formatFileData(json) {
 
     json.tree.forEach(function (node) {
         // add to parent
+        // var parent = dataMap[node.parent];
+        // if (parent) {
+        //     (parent.children || (parent.children = [])).push(node);
+        // } else {
+        //     // parent is null or missing
+        //     treeData.push(node);
+        // }
+
+        // add to parent
         var parent = dataMap[node.parent];
         if (parent) {
-            (parent.children || (parent.children = [])).push(node);
+            if (exclude && parent.path.indexOf(exclude) > -1){
+            (parent._children || (parent._children = [])).push(node);}
+            // create child array if it doesn't exist
+            else {
+                (parent.children || (parent.children = [])).push(node);
+            }
         } else {
             // parent is null or missing
             treeData.push(node);
@@ -227,7 +244,11 @@ function update(root) {
             }
             return d.commits;
         })
+        hideLoading();
+}
 
+function hideLoading() {
+    $('#loading').css( 'display', 'none' ); 
 }
 
 // get effort 
