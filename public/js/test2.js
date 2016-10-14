@@ -244,11 +244,14 @@ function update(root) {
             }
             return d.commits;
         })
-        hideLoading();
+        replaceLoading(repo);
 }
 
-function hideLoading() {
-    $('#loading').css( 'display', 'none' ); 
+function replaceLoading(repo) {
+    // $('#loading').css( 'display', 'none' ); 
+    $('#loading').text(function () {
+        return repo;
+    });
 }
 
 // get effort 

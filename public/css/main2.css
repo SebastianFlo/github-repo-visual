@@ -13,3 +13,10 @@ circle {
 text {
   font: 10px sans-serif;
 }
+
+#loading {
+    margin: 20px;
+    font-size: x-large;
+    font-family: sans-serif;
+    font-style: oblique;
+}
